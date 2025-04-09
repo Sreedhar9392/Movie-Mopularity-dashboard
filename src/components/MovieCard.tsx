@@ -2,20 +2,52 @@
 import React from "react";
 import { Movie } from "@/types/movie";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, Star } from "lucide-react";
+import { TrendingUp, Star, Bookmark, BookmarkCheck } from "lucide-react";
+import { useWatchlist } from "@/contexts/WatchlistContext";
 
 interface MovieCardProps {
   movie: Movie;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
+  const inWatchlist = isInWatchlist(movie.id);
+
+  const handleWatchlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (inWatchlist) {
+      removeFromWatchlist(movie.id);
+    } else {
+      addToWatchlist(movie);
+    }
+  };
+
   return (
     <Card className="overflow-hidden bg-movie-card border-border h-full flex flex-col hover:border-movie-accent transition-colors cursor-pointer">
       <div className="relative">
         <img src={movie.posterUrl} alt={movie.title} className="w-full aspect-[2/3] object-cover" />
-        <div className="absolute top-2 right-2 bg-black/70 rounded-full px-2 py-1 flex items-center gap-1">
-          <Star className="h-3 w-3 text-movie-yellow" fill="currentColor" />
-          <span className="text-xs font-medium">{movie.rating.toFixed(1)}</span>
+        
+        <div className="absolute top-2 right-2 flex gap-2">
+          <div className="bg-black/70 rounded-full px-2 py-1 flex items-center gap-1">
+            <Star className="h-3 w-3 text-movie-yellow" fill="currentColor" />
+            <span className="text-xs font-medium">{movie.rating.toFixed(1)}</span>
+          </div>
+          
+          <button 
+            onClick={handleWatchlistClick}
+            className={`p-1.5 rounded-full transition-colors ${
+              inWatchlist 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-black/70 text-white hover:bg-black/90'
+            }`}
+            aria-label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+          >
+            {inWatchlist ? (
+              <BookmarkCheck className="h-3.5 w-3.5" />
+            ) : (
+              <Bookmark className="h-3.5 w-3.5" />
+            )}
+          </button>
         </div>
       </div>
       
