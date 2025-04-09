@@ -10,7 +10,7 @@ interface MovieCardProps {
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   return (
-    <Card className="overflow-hidden bg-movie-card border-border h-full flex flex-col">
+    <Card className="overflow-hidden bg-movie-card border-border h-full flex flex-col hover:border-movie-accent transition-colors cursor-pointer">
       <div className="relative">
         <img src={movie.posterUrl} alt={movie.title} className="w-full aspect-[2/3] object-cover" />
         <div className="absolute top-2 right-2 bg-black/70 rounded-full px-2 py-1 flex items-center gap-1">

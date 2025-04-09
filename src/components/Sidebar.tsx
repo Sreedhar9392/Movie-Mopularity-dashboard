@@ -1,19 +1,21 @@
 
 import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Home, BarChart2, TrendingUp, Users, Film, Heart, Calendar, Settings, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItemProps {
   icon: React.ElementType;
   label: string;
+  to: string;
   active?: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active }) => {
+const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, to, active }) => {
   return (
     <li>
-      <a
-        href="#"
+      <Link
+        to={to}
         className={cn(
           "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors",
           active ? "bg-secondary text-white" : "text-muted-foreground hover:bg-secondary hover:text-white"
@@ -21,7 +23,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, active }) => {
       >
         <Icon size={20} />
         <span>{label}</span>
-      </a>
+      </Link>
     </li>
   );
 };
@@ -32,6 +34,8 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
+  const location = useLocation();
+  
   return (
     <>
       {/* Mobile overlay */}
@@ -62,14 +66,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         
         <nav className="p-4">
           <ul className="space-y-1">
-            <NavItem icon={Home} label="Dashboard" active />
-            <NavItem icon={BarChart2} label="Analytics" />
-            <NavItem icon={TrendingUp} label="Trends" />
-            <NavItem icon={Film} label="Movies" />
-            <NavItem icon={Users} label="Audiences" />
-            <NavItem icon={Heart} label="Watchlist" />
-            <NavItem icon={Calendar} label="Release Calendar" />
-            <NavItem icon={Settings} label="Settings" />
+            <NavItem 
+              icon={Home} 
+              label="Dashboard" 
+              to="/" 
+              active={location.pathname === '/'} 
+            />
+            <NavItem 
+              icon={Film} 
+              label="Movies" 
+              to="/movies" 
+              active={location.pathname === '/movies' || location.pathname.startsWith('/movies/')} 
+            />
+            <NavItem 
+              icon={BarChart2} 
+              label="Analytics" 
+              to="/analytics" 
+              active={location.pathname === '/analytics'} 
+            />
+            <NavItem icon={TrendingUp} label="Trends" to="#" />
+            <NavItem icon={Users} label="Audiences" to="#" />
+            <NavItem icon={Heart} label="Watchlist" to="#" />
+            <NavItem icon={Calendar} label="Release Calendar" to="#" />
+            <NavItem icon={Settings} label="Settings" to="#" />
           </ul>
         </nav>
       </aside>

@@ -1,13 +1,24 @@
 
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Search, Bell, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
+  
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      navigate('/movies');
+    }
+  };
+
   return (
-    <header className="w-full py-4 px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <header className="w-full py-4 px-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-border">
       <div>
-        <h1 className="text-2xl font-bold text-gradient">Movie Pulse</h1>
+        <Link to="/">
+          <h1 className="text-2xl font-bold text-gradient">Movie Pulse</h1>
+        </Link>
         <p className="text-sm text-muted-foreground">Real-time movie analytics dashboard</p>
       </div>
       
@@ -18,6 +29,7 @@ const Header: React.FC = () => {
             type="search" 
             placeholder="Search movies..." 
             className="pl-9 bg-secondary border-none w-[200px] lg:w-[300px]" 
+            onKeyDown={handleSearch}
           />
         </div>
         
