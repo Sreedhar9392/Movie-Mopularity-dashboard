@@ -3,6 +3,7 @@ import React from "react";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import { useWatchlist } from "@/contexts/WatchlistContext";
+import { useAuth } from "@/contexts/AuthContext";
 import MovieGrid from "@/components/MovieGrid";
 import { Bookmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 const Watchlist: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const { watchlist } = useWatchlist();
+  const { user } = useAuth();
   const navigate = useNavigate();
   
   const toggleSidebar = () => {
@@ -30,7 +32,7 @@ const Watchlist: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
                 <Bookmark className="h-6 w-6 text-movie-accent" />
-                My Watchlist
+                {user?.name}'s Watchlist
               </h1>
               <p className="text-muted-foreground">Movies you've saved to watch later</p>
             </div>
