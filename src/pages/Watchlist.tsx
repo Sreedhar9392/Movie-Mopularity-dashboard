@@ -1,7 +1,6 @@
 
 import React from "react";
 import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
 import { useWatchlist } from "@/contexts/WatchlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import MovieGrid from "@/components/MovieGrid";
@@ -9,25 +8,25 @@ import { Bookmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const Watchlist: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const { watchlist } = useWatchlist();
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
   return (
-    <div className="flex h-screen">
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+    <div className="flex h-screen bg-movie-dark">
+      <AppSidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        <div className="flex items-center px-4 h-16 border-b border-border bg-movie-card">
+          <SidebarTrigger />
+          <Header />
+        </div>
         
-        <main className="flex-1 overflow-y-auto p-6 bg-movie-dark">
+        <main className="flex-1 overflow-y-auto p-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
