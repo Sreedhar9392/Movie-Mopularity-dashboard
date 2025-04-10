@@ -95,7 +95,7 @@ const Analytics: React.FC = () => {
             />
           </div>
           
-          {/* Trending Movies Carousel - NEW */}
+          {/* Enhanced Trending Movies Section */}
           {showTrends && <TrendingMovies />}
           
           {/* Charts Row */}
