@@ -1,14 +1,18 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Header from "@/components/Header";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import TrendingMovies from "@/components/TrendingMovies";
-import { TrendingUp, BarChart2, Activity } from "lucide-react";
+import { TrendingUp, BarChart2, Activity, Calendar, Users, Twitter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendData } from "@/types/movie";
+import { TrendData, SentimentData } from "@/types/movie";
 import TrendChart from "@/components/charts/TrendChart";
+import SentimentChart from "@/components/charts/SentimentChart";
+import { Slider } from "@/components/ui/slider";
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 // Sample trend data
 const weeklyTrends: TrendData[] = [
@@ -28,7 +32,50 @@ const monthlyTrends: TrendData[] = [
   { name: "Week 4", value: 92 },
 ];
 
+// Sample sentiment data
+const sentimentData: SentimentData[] = [
+  { name: "Action Movies", positive: 65, neutral: 25, negative: 10 },
+  { name: "Comedy", positive: 75, neutral: 15, negative: 10 },
+  { name: "Drama", positive: 45, neutral: 30, negative: 25 },
+  { name: "Sci-Fi", positive: 55, neutral: 35, negative: 10 },
+  { name: "Horror", positive: 30, neutral: 30, negative: 40 },
+];
+
+// Mock API call for real-time sentiment
+const fetchRealtimeSentiment = async (): Promise<{ score: number; change: number }> => {
+  // Simulate API call
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Random score between 60-90
+      const score = Math.floor(Math.random() * 30) + 60;
+      // Random change between -5 and +5
+      const change = Math.floor(Math.random() * 10) - 5;
+      resolve({ score, change });
+    }, 1500);
+  });
+};
+
 const Trends: React.FC = () => {
+  const [sentimentView, setSentimentView] = useState<"genres" | "trending">("genres");
+  const [engagementLevel, setEngagementLevel] = useState<number[]>([70]);
+  const { toast } = useToast();
+  
+  const { data: realtimeSentiment, isLoading } = useQuery({
+    queryKey: ["realtimeSentiment"],
+    queryFn: fetchRealtimeSentiment,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 15000, // Consider data stale after 15 seconds
+  });
+
+  const handleEngagementChange = (value: number[]) => {
+    setEngagementLevel(value);
+    toast({
+      title: "Engagement threshold updated",
+      description: `Movies with engagement above ${value[0]}% will be highlighted`,
+      duration: 2000,
+    });
+  };
+
   return (
     <div className="flex h-screen bg-movie-dark">
       <AppSidebar />
@@ -45,7 +92,7 @@ const Trends: React.FC = () => {
             Movie Trends
           </h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className="bg-movie-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium flex items-center">
@@ -77,16 +124,95 @@ const Trends: React.FC = () => {
             <Card className="bg-movie-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-2 text-movie-accent" />
-                  Popularity Score
+                  <Twitter className="h-4 w-4 mr-2 text-movie-accent" />
+                  Real-time Sentiment
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-center h-[180px]">
-                  <div className="text-5xl font-bold text-movie-accent">87%</div>
-                  <div className="text-sm text-muted-foreground ml-2">+12% this week</div>
+                  {isLoading ? (
+                    <div className="animate-pulse flex flex-col items-center">
+                      <div className="h-16 w-16 bg-movie-card rounded-full mb-2"></div>
+                      <div className="h-4 w-20 bg-movie-card rounded"></div>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-5xl font-bold text-movie-accent">
+                        {realtimeSentiment?.score}%
+                      </div>
+                      <div className={`text-sm ${realtimeSentiment?.change && realtimeSentiment.change > 0 
+                          ? 'text-movie-green' 
+                          : realtimeSentiment?.change && realtimeSentiment.change < 0 
+                            ? 'text-movie-red' 
+                            : 'text-muted-foreground'}`}>
+                        {realtimeSentiment?.change && realtimeSentiment.change > 0 ? '+' : ''}
+                        {realtimeSentiment?.change}% this hour
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
+            </Card>
+          </div>
+          
+          <div className="mb-8">
+            <Card className="bg-movie-card border-border">
+              <CardHeader className="pb-2">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                  <CardTitle className="text-base font-medium flex items-center">
+                    <Users className="h-4 w-4 mr-2 text-movie-accent" />
+                    Audience Sentiment
+                  </CardTitle>
+                  <div className="flex items-center space-x-2 mt-2 md:mt-0">
+                    <button 
+                      className={`px-3 py-1 text-xs rounded-full ${sentimentView === 'genres' 
+                        ? 'bg-movie-accent text-white' 
+                        : 'bg-secondary hover:bg-secondary/80'}`}
+                      onClick={() => setSentimentView('genres')}
+                    >
+                      By Genre
+                    </button>
+                    <button 
+                      className={`px-3 py-1 text-xs rounded-full ${sentimentView === 'trending' 
+                        ? 'bg-movie-accent text-white' 
+                        : 'bg-secondary hover:bg-secondary/80'}`}
+                      onClick={() => setSentimentView('trending')}
+                    >
+                      Trending Movies
+                    </button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <SentimentChart data={sentimentData} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="mb-6">
+            <Card className="bg-movie-card border-border p-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-medium mb-1">Engagement Threshold</h3>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Set minimum engagement level for highlighted movies
+                  </p>
+                </div>
+                <div className="w-full md:w-1/2 flex items-center gap-4">
+                  <Slider
+                    value={engagementLevel}
+                    onValueChange={handleEngagementChange}
+                    max={100}
+                    step={5}
+                    className="flex-1"
+                  />
+                  <span className="text-sm font-medium w-12 text-center">
+                    {engagementLevel[0]}%
+                  </span>
+                </div>
+              </div>
             </Card>
           </div>
           
@@ -101,12 +227,24 @@ const Trends: React.FC = () => {
             </TabsContent>
             <TabsContent value="upcoming" className="pt-6">
               <div className="bg-movie-card p-6 rounded-lg border border-border">
-                <p className="text-muted-foreground text-center">Upcoming releases data coming soon</p>
+                <div className="flex items-center mb-4">
+                  <Calendar className="h-5 w-5 text-movie-accent mr-2" />
+                  <h3 className="text-lg font-medium">Upcoming Releases</h3>
+                </div>
+                <p className="text-muted-foreground text-center">
+                  Calendar view of upcoming releases coming soon
+                </p>
               </div>
             </TabsContent>
             <TabsContent value="buzz" className="pt-6">
               <div className="bg-movie-card p-6 rounded-lg border border-border">
-                <p className="text-muted-foreground text-center">Social media buzz analysis coming soon</p>
+                <div className="flex items-center mb-4">
+                  <Twitter className="h-5 w-5 text-movie-accent mr-2" />
+                  <h3 className="text-lg font-medium">Social Media Buzz</h3>
+                </div>
+                <p className="text-muted-foreground text-center">
+                  Real-time social media sentiment analysis coming soon
+                </p>
               </div>
             </TabsContent>
           </Tabs>
